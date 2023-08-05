@@ -1,0 +1,87 @@
+// This is your Prisma schema file
+// learn more about it in the docs https//pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum EntityKind {
+  USER
+  ORG
+}
+
+model Entity {
+  id    Int              @id @default(autoincrement())
+  type  EntityKind
+  repos RepoMembership[]
+  //Org  Org[]
+  user  User?            @relation("User-Entity")
+  Org   Org?             @relation("Org-Entity")
+}
+
+model User {
+  entityId Int             @unique
+  entity   Entity          @relation(name: "User-Entity", fields: [entityId], references: [id])
+  name     String          @db.VarChar(100)
+  hashedPw String
+  salt     String
+  orgs     OrgMembership[]
+  email    Email[]         @relation("Email-User")
+
+  @@id([entityId])
+}
+
+model Org {
+  entityId Int             @unique
+  entity   Entity          @relation(name: "Org-Entity", fields: [entityId], references: [id])
+  name     String          @db.VarChar(100)
+  members  OrgMembership[]
+
+  @@id([entityId])
+}
+
+//Relational table between User and Org
+model OrgMembership {
+  user   User @relation(fields: [userId], references: [entityId])
+  userId Int
+  org    Org  @relation(fields: [orgId], references: [entityId])
+  orgId  Int
+
+  @@id([userId, orgId])
+}
+
+model Repo {
+  id      Int              @id @default(autoincrement())
+  name    String           @db.VarChar(100)
+  members RepoMembership[]
+}
+
+model Email {
+  id     Int    @id @default(autoincrement())
+  email  String @unique @db.VarChar(100)
+  user   User   @relation(name: "Email-User", fields: [userId], references: [entityId])
+  userId Int
+}
+
+enum PermKind {
+  OWNER
+  ADMIN
+  WRITER
+  READER
+}
+
+//Relational table between Repo and Entity
+model RepoMembership {
+  member     Entity   @relation(fields: [memberId], references: [id])
+  memberId   Int
+  repo       Repo     @relation(fields: [repoId], references: [id])
+  repoId     Int
+  permission PermKind
+
+  @@id([memberId, repoId])
+}

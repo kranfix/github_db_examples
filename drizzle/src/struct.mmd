@@ -1,0 +1,65 @@
+erDiagram
+    USER_PERM_ORG ||--|{ ORGANIZATIONS : Set
+    USER_PERM_ORG ||--|{ ACCOUNT : Follow
+    ORGANIZATIONS ||--|{ PROFILE : Own
+    ACCOUNT ||--|{ PROFILE : Own
+    ACCOUNT ||--|{ EMAILPHONE : Has
+    PROFILE ||--o{ USER_PERM_REPO : Set
+    REPOS ||--|{ USER_PERM_REPO : Follow
+    URLREPOS }|--|| REPOS: Belong
+    URLREPOS }|--|| PROFILE: Belong
+
+    ACCOUNT {
+        ID id
+        string saltedHash
+        string salt
+        ID profile_id FK
+    }
+
+    ORGANIZATIONS {
+        ID id
+        ID profile_id FK
+    }
+
+    REPOS {
+        ID id FK
+        string name UK
+        string storage
+        string owners
+        string collaborators
+    }
+
+    URLREPOS {
+        string tag PK
+        string repo_id FK
+        string profile_id PK, FK
+    }
+
+    EMAILPHONE{
+        string value
+        string type
+        string status
+        string user_id FK
+    }
+
+    PROFILE {
+        string id
+        string nickname
+        string name
+        string type
+        string target
+    }
+
+    USER_PERM_REPO{
+        string id
+        string profile_id
+        string perms
+        string repo_id
+    }
+
+    USER_PERM_ORG{
+        string id
+        string user_id
+        string perms
+        string org_id
+    }
